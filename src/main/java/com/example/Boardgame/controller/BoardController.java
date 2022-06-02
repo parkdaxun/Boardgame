@@ -6,22 +6,20 @@ import com.example.Boardgame.repository.BoardRepository;
 import com.example.Boardgame.repository.FileRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
 
 
 @Controller
@@ -34,10 +32,17 @@ public class BoardController {
 
     @GetMapping(value = "/board")
     @ResponseBody
-    public List<Board> allUser(){
+    public List<Board> allUser(@RequestParam(required = false) String name){
         Map<String, Object> response = new HashMap<>();
         //jpa에 있는 findAll사용
-        List<Board> boardList = boardRepository.findAll();
+
+        List<Board> boardList = null;
+        if (name != null) {
+            boardList = boardRepository.findAllByName(name);
+        } else {
+            boardList = boardRepository.findAll();
+        }
+
         System.out.println("findAll");
         return boardList;
     }
@@ -83,4 +88,41 @@ public class BoardController {
 
         return saveBoard;
     }
+
+    @Transactional
+    @Modifying
+    @PostMapping(value = "/updateBoard")
+    @ResponseBody
+    public Optional<Board> updateBoard(
+            @RequestParam("boardId") Long id,
+            @RequestParam("name") String name,
+            @RequestParam("distributor") String distributor,
+            @RequestParam("min_person") int min_person,
+            @RequestParam("max_person") int max_person
+    ) {
+        Optional<Board> oldBoard = boardRepository.findById(id);
+        oldBoard.ifPresent(selectBoard ->{
+            selectBoard.setName(name);
+            selectBoard.setDistributor(distributor);
+            selectBoard.setMin_person(min_person);
+            selectBoard.setMax_person(max_person);
+            Board updatedBoard = (Board) boardRepository.save(selectBoard);
+        });
+        return boardRepository.findById(id);
+    }
+
+    @Transactional
+    @Modifying
+    @PostMapping(value = "/deleteBoard")
+    @ResponseBody
+    public Boolean DeleteBoard(@RequestParam("board") Long id) {
+        try{
+            boardRepository.deleteById(id);
+            return true;
+        }
+        catch (Exception e){
+            return false;
+        }
+    }
+
 }

@@ -1,6 +1,8 @@
 package com.example.Boardgame.controller;
 
+import com.example.Boardgame.service.MyBatisService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
 import com.example.Boardgame.entity.User;
@@ -14,22 +16,20 @@ import java.util.Map;
 
 //@RequiredArgsConstructor 어노테이션을 사용한 "생성자 주입"
 @RequiredArgsConstructor
-//@Controller는 주로 View를 반환하기 위해 사용
 @Controller
 public class UserController {
-
-    private final UserService userService;
+    @Autowired
+    MyBatisService myBatisService;
 
     @GetMapping(value = "/select")
     @ResponseBody
     public Map<String, Object> selectAllUser(){
-        System.out.println("aa1");
         Map<String, Object> response = new HashMap<>();
-        System.out.println("aa2");
-        List<User> userList = userService.selectAll();
-        System.out.println("aa3");
-        System.out.println(userList);
-        response.put("result", userList);
+//        List<User> userList = userService.selectAll();
+//        System.out.println(userList)
+//        response.put("result", userList);
+
+        response.put("result", myBatisService.findAll());
 
         return response;
     }

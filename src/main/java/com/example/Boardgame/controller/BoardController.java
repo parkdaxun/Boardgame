@@ -24,6 +24,9 @@ import java.util.*;
 
 @Controller
 public class BoardController {
+
+
+
     //자동연결(기존에 있는 걸로 사용)
     @Autowired
     private BoardRepository boardRepository;
